@@ -1,0 +1,31 @@
+#!/bin/sh
+
+if [ -z "$2" ]; then
+    echo "Usage $0 <hostname> <cmd> <args...>"
+    exit 1
+fi
+
+find_lib () {
+    for path in . /usr/local/lib /usr/lib; do
+        LIB_PATH="$path/$1"
+        if [ -x "$LIB_PATH" ]; then
+            echo "$LIB_PATH"
+            return
+        fi
+    done
+
+    echo "Couldn't find library: $1"
+    exit 1
+}
+
+if [ "$(uname -s)" = "Darwin" ]; then
+    export DYLD_INSERT_LIBRARIES="$(find_lib libfakehostname.dylib)"
+    export DYLD_FORCE_FLAT_NAMESPACE=1
+else
+    export LD_PRELOAD="$(find_lib libfakehostname.so)"
+fi
+
+export FAKE_HOSTNAME="$1"
+shift 1
+
+exec $@

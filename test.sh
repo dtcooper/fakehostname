@@ -10,21 +10,27 @@ random_hostname () {
 run_test () {
     if [ "$2" = "$3" ]; then
         echo "Test for \`$1\` passed."
+        return 0
     else
-        echo "Test for \`$1\` failed!"
-        echo "Hostname \"$2\" (expected) != \"$3\" (actual)"
-        exit 1
+        echo "Test for \`$1\` failed: \"$2\" (expected) != \"$3\" (actual)"
+        return 1
     fi
 }
 
 # macOS won't work for commands in /bin and /usr/bin becuase of System Integrity
 # Protection, so let's copy uname and hostname to this dir
 BIN_PREFIX=
-IS_MACOS=
 if [ "$(uname -s)" = "Darwin" ]; then
+    echo '[Darwin detected, copying `uname` and `hostname` binaries]'
     cp $(which uname hostname) .
     BIN_PREFIX="./"
-    IS_MACOS=1
+
+    cleanup () {
+        echo '[Removing `uname` and `hostname` binaries]'
+        rm uname hostname
+    }
+
+    trap cleanup EXIT
 fi
 
 UNAME_EXPECTED="$(random_hostname uname)"
@@ -34,8 +40,3 @@ run_test uname "$UNAME_EXPECTED" "$UNAME_ACTUAL"
 HOSTNAME_EXPECTED="$(random_hostname hostname)"
 HOSTNAME_ACTUAL="$(./fakehostname "$HOSTNAME_EXPECTED" "${BIN_PREFIX}hostname")"
 run_test hostname "$HOSTNAME_EXPECTED" "$HOSTNAME_ACTUAL"
-
-# Clean up for macOS
-if [ "$IS_MACOS" ]; then
-    rm uname hostname
-fi

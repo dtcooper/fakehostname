@@ -6,7 +6,9 @@
 #include <sys/utsname.h>
 
 
-#define ENV_VARNAME "FAKE_HOSTNAME"
+#ifndef ENV_VARNAME
+    #define ENV_VARNAME "FAKE_HOSTNAME"
+#endif
 
 
 static int (*__orig_gethostname)(char *name, size_t len) = NULL;

@@ -1,38 +1,50 @@
 CC:=gcc
-CFLAGS:=-Wall -fPIC
+CFLAGS:=-Wall -Wextra -std=gnu99
 LDLIBS:=-ldl
 DESTDIR:=/usr/local
 BINDIR:=bin
 LIBDIR:=lib
+LIB_LOCATIONS:=".:/usr/local/lib:/usr/lib"
+ENV_VARNAME:=FAKE_HOSTNAME
 
 PLATFORM:=$(shell uname -s)
 
 ifeq ($(PLATFORM),Darwin)
-	CFLAGS+=-dynamiclib -flat_namespace
-	LIB_SUFFIX=dylib
+	CLIBFLAGS:=-fPIC -dynamiclib -flat_namespace
+	LIB_SUFFIX:=dylib
 else
-	CFLAGS+=-shared
-	LIB_SUFFIX=so
+	CLIBFLAGS:=-fPIC -shared
+	LIB_SUFFIX:=so
 endif
 
-SRC_FILE=libfakehostname.c
-LIB_FILE=libfakehostname.$(LIB_SUFFIX)
-SCRIPT_FILE=fakehostname
+LIB_SRC_FILE=libfakehostname.c
+LIB_FILE:=libfakehostname.$(LIB_SUFFIX)
+CMD_SRC_FILE=fakehostname.c
+CMD_FILE:=fakehostname
 
-all: $(LIB_FILE)
+# Use CDEFs to set a custom preload library name or search path
+CDEFS:=-DLIB_LOCATIONS="\"$(LIB_LOCATIONS)\"" \
+	-DLIB_FILE="\"$(LIB_FILE)\"" \
+	-DENV_VARNAME="\"ENV_VARNAME\""
 
-$(LIB_FILE): $(SRC_FILE)
-	$(CC) $(CFLAGS) $(SRC_FILE) -o $(LIB_FILE) $(LDLIBS)
+all: $(LIB_FILE) $(CMD_FILE)
+
+$(LIB_FILE): $(LIB_SRC_FILE)
+	$(CC) $(CFLAGS) $(CLIBFLAGS) $(CDEFS) $(LIB_SRC_FILE) -o $(LIB_FILE) $(LDLIBS)
+
+$(CMD_FILE): $(CMD_SRC_FILE)
+	$(CC) $(CFLAGS) $(CDEFS) $(CMD_SRC_FILE) -o $(CMD_FILE)
 
 install: all
-	install $(LIB_FILE) $(DESTDIR)/$(LIBDIR)
-	install $(SCRIPT_FILE) $(DESTDIR)/$(BINDIR)
+	@echo "Installing to $(DESTDIR)"
+	install $(LIB_FILE) $(DESTDIR)/$(LIBDIR)/
+	install $(SCRIPT_FILE) $(DESTDIR)/$(BINDIR)/
 
 uninstall:
-	rm -f $(DESTDIR)/$(LIBDIR)/$(LIB_FILE) $(DESTDIR)/$(BINDIR)/$(SCRIPT_FILE)
+	rm -vf $(DESTDIR)/$(LIBDIR)/$(LIB_FILE) $(DESTDIR)/$(BINDIR)/$(SCRIPT_FILE)
 
 clean:
-	rm -f *.dylib *.so
+	rm -vf *.dylib *.so fakehostname
 
 test: all
 	@./test.sh

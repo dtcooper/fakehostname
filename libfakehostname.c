@@ -6,8 +6,8 @@
 #include <sys/utsname.h>
 
 
-#ifndef ENV_VARNAME
-    #define ENV_VARNAME "FAKE_HOSTNAME"
+#ifndef ENV_VARNAME_FAKE_HOSTNAME
+    #define ENV_VARNAME_FAKE_HOSTNAME "FAKE_HOSTNAME"
 #endif
 
 
@@ -23,10 +23,11 @@ int gethostname(char *name, size_t len) {
         __orig_gethostname = dlsym(RTLD_NEXT, "gethostname");
     }
 
-    fake_hostname =  getenv(ENV_VARNAME);
+    fake_hostname =  getenv(ENV_VARNAME_FAKE_HOSTNAME);
 
     if (fake_hostname) {
-        strncpy(name, fake_hostname, len);
+        strncpy(name, fake_hostname, len - 2);
+        name[len - 1] = '\0';
         retval = 0;
     } else {
         retval = __orig_gethostname(name, len);
@@ -43,11 +44,12 @@ int uname(struct utsname *buf) {
         __orig_uname = dlsym(RTLD_NEXT, "uname");
     }
 
-    fake_hostname = getenv(ENV_VARNAME);
+    fake_hostname = getenv(ENV_VARNAME_FAKE_HOSTNAME);
     retval = __orig_uname(buf);
 
     if (fake_hostname) {
-        strncpy(buf->nodename, fake_hostname, sizeof(buf->nodename));
+        strncpy(buf->nodename, fake_hostname, sizeof(buf->nodename) - 2);
+        buf->nodename[sizeof(buf->nodename) - 1] = '\0';
     }
 
     return retval;

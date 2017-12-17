@@ -1,3 +1,4 @@
-hostname
+fakehostname
+test_cmd
 *.dylib
 *.so

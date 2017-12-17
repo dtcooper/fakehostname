@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <getopt.h>
+#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -78,11 +79,21 @@ char *get_lib_path() {
 
 void usage(char *cmd_name, int exit_code) {
     printf(
-        "Usage: %s [-v] [-l /path.to/lib." LIB_SUFFIX
-        "] <new-hostname> <cmd> [<args> ...]\n", cmd_name);
+        "\nUsage: %s [-h] [-v] [-l ./lib." LIB_SUFFIX "] <new-hostname> <cmd> [<args> ...]\n\n"
+        "This command fakes your system's hostname for a given command, overriding libc\n"
+        "calls to uname() and gethostname()\n\n"
+        "Positional arguments:\n"
+        "  <new-hostname>      Fake hostname to use\n"
+        "  <cmd> [<args> ...]  Command and its arguments to execute\n\n"
+        "Optional arguments:\n"
+        "  -v --verbose         Print verbose output\n"
+        "  -h, --help           Show this help message and exit\n"
+        "  -l /abs.path/to/mylib." LIB_SUFFIX ", --library /abs.path/to/mylib." LIB_SUFFIX "\n"
+        "                       Custom path of fakehostname library (must be absolute)\n\n"
+        "...and remember kids, have fun!\n\n",
+    basename(cmd_name));
     exit(exit_code);
 }
-
 
 int parse_options(int argc, char **argv) {
     int c;
@@ -121,11 +132,6 @@ int parse_options(int argc, char **argv) {
 
 int main(int argc, char **argv) {
     int argv_cmd = parse_options(argc, argv);
-
-    if (argc < 3) {
-        printf("Usage %s <fake-hostname> <cmd> [<args...>]\n", argv[0]);
-        return EXIT_FAILURE;
-    }
 
     char preload_env_var_value[PATH_MAX];
     char *lib_path = get_lib_path();

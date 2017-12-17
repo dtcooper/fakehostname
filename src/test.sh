@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd $(dirname "$0")
+cd $(dirname "$0")/..
 
 FAILED=0
 NUM_TESTS=0

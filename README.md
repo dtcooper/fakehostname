@@ -86,8 +86,15 @@ If all goes well, you should see a `SUCCESS: All X/Y tests passed!` message!
 
 ## Uninstalling
 
-Uninstall with one command!
+Uninstall with one command,
 
 ```
 sudo make uninstall
 ```
+
+## Author and License
+
+This project was created by [David Cooper](http://dtcooper.com/) and is licensed
+under the MIT License. See the
+[`LICENSE`](https://github.com/dtcooper/fakehostname/blob/master/LICENSE) file
+for details.

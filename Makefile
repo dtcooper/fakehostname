@@ -6,6 +6,7 @@ BINDIR:=bin
 LIBDIR:=lib
 LIB_LOCATIONS:=".:/usr/local/lib:/usr/lib"
 ENV_VARNAME_FAKE_HOSTNAME:=FAKE_HOSTNAME
+VPATH=src
 
 PLATFORM:=$(shell uname -s)
 
@@ -30,12 +31,13 @@ CDEFS:=-DLIB_LOCATIONS="\"$(LIB_LOCATIONS)\"" \
 	-DENV_VARNAME_FAKE_HOSTNAME="\"$(ENV_VARNAME_FAKE_HOSTNAME)\""
 
 all: $(LIB_FILE) $(CMD_FILE)
+example: $(LIB_FILE) $(CMD_FILE)
 
-$(LIB_FILE): $(LIB_SRC_FILE)
-	$(CC) $(CFLAGS) $(CLIBFLAGS) $(CDEFS) $(LIB_SRC_FILE) -o $(LIB_FILE) $(LDLIBS)
+%.$(LIB_SUFFIX): %.c
+	$(CC) $(CFLAGS) $(CLIBFLAGS) $(CDEFS) $< -o $@ $(LDLIBS)
 
-$(CMD_FILE): $(CMD_SRC_FILE)
-	$(CC) $(CFLAGS) $(CDEFS) $(CMD_SRC_FILE) -o $(CMD_FILE)
+%: %.c
+	$(CC) $(CFLAGS) $(CDEFS) $< -o $@
 
 install: all
 	@echo "Installing to $(DESTDIR)"
@@ -48,10 +50,7 @@ uninstall:
 clean:
 	rm -vf $(LIB_NAME).so $(LIB_NAME).dylib $(CMD_FILE) example
 
-example: $(LIB_FILE) $(CMD_FILE) example.c
-	$(CC) $(CFLAGS) example.c -o example
-
 test: example
-	@./test.sh
+	@./src/test.sh
 
 .PHONY: all clean install uninstall test

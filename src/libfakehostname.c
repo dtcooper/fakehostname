@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 
+#include <dlfcn.h>
 #include <string.h>
 #include <stdlib.h>
-#include <dlfcn.h>
 #include <sys/utsname.h>
 
 

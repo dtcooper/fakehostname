@@ -40,7 +40,7 @@ fi
 
 if [ ! -f "example" ]; then
     echo "[Command example not found. Running make.]"
-    make example
+    make all example
     echo
 fi
 
@@ -53,7 +53,7 @@ run_test "uname command" "$EXPECTED" "$ACTUAL"
 
 EXPECTED="$(random_hostname uname_c)"
 ACTUAL="$(./fakehostname "$EXPECTED" ./example uname)"
-run_test "uname() function in C" "$EXPECTED" "$ACTUAL"
+run_test "example: uname() function in C" "$EXPECTED" "$ACTUAL"
 
 EXPECTED="$(random_hostname hostname_cmd)"
 ACTUAL="$(./fakehostname "$EXPECTED" "${SYS_CMD_PREFIX}hostname")"
@@ -61,7 +61,7 @@ run_test "hostname command" "$EXPECTED" "$ACTUAL"
 
 EXPECTED="$(random_hostname hostname_c)"
 ACTUAL="$(./fakehostname "$EXPECTED" ./example gethostname)"
-run_test "gethostname() function in C" "$EXPECTED" "$ACTUAL"
+run_test "example: gethostname() function in C" "$EXPECTED" "$ACTUAL"
 
 EXPECTED="$(random_hostname libarg)"
 cp "libfakehostname.$LIB_SUFFIX" testlib.bin

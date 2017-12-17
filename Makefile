@@ -31,7 +31,6 @@ CDEFS:=-DLIB_LOCATIONS="\"$(LIB_LOCATIONS)\"" \
 	-DENV_VARNAME_FAKE_HOSTNAME="\"$(ENV_VARNAME_FAKE_HOSTNAME)\""
 
 all: $(LIB_FILE) $(CMD_FILE)
-example: $(LIB_FILE) $(CMD_FILE)
 
 %.$(LIB_SUFFIX): %.c
 	$(CC) $(CFLAGS) $(CLIBFLAGS) $(CDEFS) $< -o $@ $(LDLIBS)
@@ -50,7 +49,9 @@ uninstall:
 clean:
 	rm -vf $(LIB_NAME).so $(LIB_NAME).dylib $(CMD_FILE) example
 
-test: example
+test: example $(LIB_FILE) $(CMD_FILE)
 	@./src/test.sh
+
+example:
 
 .PHONY: all clean install uninstall test

@@ -47,11 +47,14 @@ accomplished via `LD_PRELOAD` environment variables on Linux, and the
 The library reads environment variable `FAKE_HOSTNAME` -- prepped by the command
 -- and uses that instead of your system's hostname.
 
+This software has been tested on macOS 10.11 (El Capitan) and Ubuntu 16.04 LTS
++ 17.10.
+
 ## Important Note for Apple's macOS (Darwin)
 
 On macOS, starting with 10.11 (El Capitan), a feature called [System Integrity
 Protection](https://en.wikipedia.org/wiki/System_Integrity_Protection) was
-introduced that disallows the use dynamic insertion of libraries for system
+introduced that disallows the dynamic insertion of libraries for system
 executables. One therefore can't use the environment variable
 `DYLD_INSERT_LIBRARIES` to actually use `libfakehostname`'s implementation of
 the `uname` and `gethostname`.
@@ -71,7 +74,7 @@ $ fakehostname rivers ./hostname
 rivers
 ```
 
-Unforunately, this renders this software relatively useless on macOS. Oh well!
+Unfortunately, this renders this software relatively useless on macOS. Oh well!
 
 ## Running The Tests
 
@@ -82,7 +85,7 @@ There a couple simple tests for the command, namely running `uname` and
 make test
 ```
 
-If all goes well, you should see a `SUCCESS: All X/Y tests passed!` message!
+If all goes well, you should see a `SUCCESS: All N/N tests passed!` message!
 
 ## Uninstalling
 

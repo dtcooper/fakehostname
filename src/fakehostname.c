@@ -1,15 +1,13 @@
-//TODO trim deps
-#ifdef __APPLE__
-    #include <limits.h>
-#else
-    #include <linux/limits.h>
-#endif
-
 #include <errno.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef __APPLE__
+    #include <sys/syslimits.h>
+#else
+    #include <linux/limits.h>
+#endif
 #include <unistd.h>
 
 #ifdef __APPLE__
@@ -105,10 +103,11 @@ int parse_options(int argc, char **argv) {
                 break;
             case 'h':
                 usage(argv[0], EXIT_SUCCESS);
+                break;
             case '?':
             default:
                 usage(argv[0], EXIT_FAILURE);
-
+                break;
        }
     }
     if ((optind + 2) > argc) {

@@ -12,25 +12,24 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef __APPLE__
+    #define ENV_VARNAME_PRELOAD "DYLD_INSERT_LIBRARIES"
+    #define ENV_PRELOAD_PATH_SEP ":"
+    #define LIB_SUFFIX "dylib"
+#else
+    #define ENV_VARNAME_PRELOAD "LD_PRELOAD"
+    #define ENV_PRELOAD_PATH_SEP " "
+    #define LIB_SUFFIX "so"
+#endif
+
 #ifndef ENV_VARNAME_FAKE_HOSTNAME
     #define ENV_VARNAME_FAKE_HOSTNAME "FAKE_HOSTNAME"
 #endif
-
 #ifndef LIB_LOCATIONS
     #define LIB_LOCATIONS ".:/usr/local/lib:/usr/lib"
 #endif
 #ifndef LIB_FILENAME
-    #ifdef __APPLE__
-        #define LIB_FILENAME "libfakehostname.dylib"
-    #else
-        #define LIB_FILENAME "libfakehostname.so"
-    #endif
-#endif
-
-#ifdef __APPLE__
-    #define ENV_VARNAME_PRELOAD "DYLD_INSERT_LIBRARIES"
-#else
-    #define ENV_VARNAME_PRELOAD "LD_PRELOAD"
+    #define LIB_FILENAME "libfakehostname." LIB_SUFFIX
 #endif
 
 static char *custom_lib_path = NULL;
@@ -38,6 +37,10 @@ static char *new_hostname;
 static int verbose = 0;
 
 #define VERBOSE(...) if (verbose) printf(__VA_ARGS__)
+#define SETENV(name, val, ...) \
+    if (verbose) \
+        printf("Setting environment variable \"%s\": \"%s\"\n", name, val); \
+        setenv(name, val, __VA_ARGS__)
 
 char *get_lib_path() {
     static char lib_path[PATH_MAX];
@@ -54,21 +57,20 @@ char *get_lib_path() {
     }
 
     for (
-        char *lib_prefix = strtok(lib_locations, ":");
-        lib_prefix != NULL;
-        lib_prefix = strtok(NULL, ":")
+        char *lib_path_prefix = strtok(lib_locations, ":");
+        lib_path_prefix != NULL;
+        lib_path_prefix = strtok(NULL, ":")
     ) {
-        strncpy(lib_path, lib_prefix, PATH_MAX - 1);
-        VERBOSE("Searching for " LIB_FILENAME " in \"%s/\":", lib_path);
-
+        strncpy(lib_path, lib_path_prefix, PATH_MAX - 1);
         strncat(lib_path, "/" LIB_FILENAME, PATH_MAX - 1 - strlen(lib_path));
         lib_path[PATH_MAX - 1] = '\0';
+        VERBOSE("Checking %s: ", lib_path);
 
         if (access(lib_path, X_OK) != -1) {
-            VERBOSE(" found!\n");
+            VERBOSE("exists!\n");
             return lib_path;
         }
-        VERBOSE(" not found.\n");
+        VERBOSE("not found.\n");
     }
 
     printf("Couldn't find required library: " LIB_FILENAME "\n");
@@ -78,12 +80,7 @@ char *get_lib_path() {
 
 void usage(char *cmd_name, int exit_code) {
     printf(
-        "Usage: %s [-v] [-l /path.to/lib."
-#ifdef __APPLE__
-        "dylib"
-#else
-        "so"
-#endif
+        "Usage: %s [-v] [-l /path.to/lib." LIB_SUFFIX
         "] <new-hostname> <cmd> [<args> ...]\n", cmd_name);
     exit(exit_code);
 }
@@ -141,13 +138,9 @@ int main(int argc, char **argv) {
         VERBOSE("Found existing value in " ENV_VARNAME_PRELOAD ": %s\n",
             current_preload_env_var_value);
 
-        strncat(preload_env_var_value,
-#ifdef __APPLE__
-            ":",
-#else
-            " ",
-#endif
+        strncat(preload_env_var_value, ENV_PRELOAD_PATH_SEP,
             PATH_MAX - 1 - strlen(preload_env_var_value));
+
         strncat(preload_env_var_value,
                 current_preload_env_var_value,
                 PATH_MAX - 1 - strlen(preload_env_var_value));
@@ -155,15 +148,10 @@ int main(int argc, char **argv) {
     preload_env_var_value[PATH_MAX - 1] = '\0';
 
     //Set FAKE_HOSTNAME, LD_PRELOAD (or DYLD vars for macOS)
-    setenv(ENV_VARNAME_FAKE_HOSTNAME, new_hostname, 1);
-    VERBOSE("Setting " ENV_VARNAME_FAKE_HOSTNAME ": \"%s\"\n", new_hostname);
-
-    setenv(ENV_VARNAME_PRELOAD, preload_env_var_value, 1);
-    VERBOSE("Setting " ENV_VARNAME_PRELOAD ": \"%s\"\n", preload_env_var_value);
-
+    SETENV(ENV_VARNAME_FAKE_HOSTNAME, new_hostname, 1);
+    SETENV(ENV_VARNAME_PRELOAD, preload_env_var_value, 1);
 #ifdef __APPLE__
-    setenv("DYLD_FORCE_FLAT_NAMESPACE", "1", 1);
-    VERBOSE("Setting DYLD_FORCE_FLAT_NAMESPACE: \"1\"\n");
+    SETENV("DYLD_FORCE_FLAT_NAMESPACE", "1", 1);
 #endif
 
     if (verbose) {

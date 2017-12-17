@@ -10,7 +10,6 @@
     #define ENV_VARNAME_FAKE_HOSTNAME "FAKE_HOSTNAME"
 #endif
 
-
 static int (*__orig_gethostname)(char *name, size_t len) = NULL;
 static int (*__orig_uname)(struct utsname *buf) = NULL;
 
@@ -20,8 +19,11 @@ int gethostname(char *name, size_t len) {
     char *fake_hostname;
 
     if (__orig_gethostname == NULL) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
         __orig_gethostname = dlsym(RTLD_NEXT, "gethostname");
     }
+#pragma GCC diagnostic pop
 
     fake_hostname =  getenv(ENV_VARNAME_FAKE_HOSTNAME);
 
@@ -41,7 +43,10 @@ int uname(struct utsname *buf) {
     char *fake_hostname;
 
     if (__orig_uname == NULL) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
         __orig_uname = dlsym(RTLD_NEXT, "uname");
+#pragma GCC diagnostic pop
     }
 
     fake_hostname = getenv(ENV_VARNAME_FAKE_HOSTNAME);

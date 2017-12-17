@@ -1,5 +1,5 @@
 CC:=gcc
-CFLAGS:=-Wall -Wextra -std=gnu99 -O2
+CFLAGS:=-Wall -Wextra -Wpedantic -std=gnu99 -O2
 LDLIBS:=-ldl
 DESTDIR:=/usr/local
 BINDIR:=bin
@@ -27,7 +27,7 @@ CMD_FILE:=$(CMD_NAME)
 # Use CDEFs to set a custom preload library name or search path
 CDEFS:=-DLIB_LOCATIONS="\"$(LIB_LOCATIONS)\"" \
 	-DLIB_FILE="\"$(LIB_FILE)\"" \
-	-DENV_VARNAME_FAKE_HOSTNAME="\"ENV_VARNAME_FAKE_HOSTNAME\""
+	-DENV_VARNAME_FAKE_HOSTNAME="\"$(ENV_VARNAME_FAKE_HOSTNAME)\""
 
 all: $(LIB_FILE) $(CMD_FILE)
 
@@ -46,12 +46,12 @@ uninstall:
 	rm -vf $(DESTDIR)/$(LIBDIR)/$(LIB_FILE) $(DESTDIR)/$(BINDIR)/$(CMD_FILE)
 
 clean:
-	rm -vf $(LIB_NAME).so $(LIB_NAME).dylib $(CMD_FILE) test_cmd
+	rm -vf $(LIB_NAME).so $(LIB_NAME).dylib $(CMD_FILE) example
 
-test_cmd: test_cmd.c
-	$(CC) $(CFLAGS) test_cmd.c -o test_cmd
+example: $(LIB_FILE) $(CMD_FILE) example.c
+	$(CC) $(CFLAGS) example.c -o example
 
-test: all test_cmd
+test: example
 	@./test.sh
 
 .PHONY: all clean install uninstall test

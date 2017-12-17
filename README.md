@@ -11,11 +11,11 @@ Usage is relatively simple: `fakehostname <new-hostname> <cmd> [<args> ...]`
 For example,
 
 ```
-$ fakehostname hi-mom hostname
-himom
+$ fakehostname joan hostname
+joan
 
-$ fakehostname hi-dad uname -n
-hidad
+$ fakehostname rivers uname -n
+rivers
 ```
 
 ### Installation
@@ -27,6 +27,13 @@ $ git clone https://github.com/dtcooper/fakehostname.git
 $ cd fakehostname
 $ make
 $ sudo make install
+```
+
+On Debian/Ubuntu you'll need [GCC](https://gcc.gnu.org/) which you can install
+via,
+
+```
+$ sudo apt-get install -y build-essential
 ```
 
 ## Overview
@@ -54,14 +61,14 @@ You'll have to use executables that aren't in your system's path, ie `/bin`,
 to copy it locally.
 
 ```
-# Run on a Mac named "byrne" and it doesn't work, since `hostname` is in /bin
-$ fakehostname weymouth hostname
-byrne
+# Run on a Mac named "joan" and it doesn't work, since `hostname` is in /bin
+$ fakehostname rivers hostname
+joan
 
 # So we copy the `hostname` command locally, and hurray, it works!
 $ cp /bin/hostname .
-$ fakehostname weymouth ./hostname
-weymouth
+$ fakehostname rivers ./hostname
+rivers
 ```
 
 Unforunately, this renders this software relatively useless on macOS. Oh well!

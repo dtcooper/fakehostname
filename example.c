@@ -26,19 +26,26 @@ void do_gethostname() {
     }
 }
 
+void do_both() {
+    printf("uname(): ");
+    do_uname();
+    printf("gethostname(): ");
+    do_gethostname();
+}
+
 int main(int argc, char **argv) {
     if (argc >= 2) {
-        if (strcmp(argv[1], "uname") == 0) {
+        char *arg = argv[1];
+        if (strcmp(arg, "uname") == 0)
             do_uname();
-        } else if (strcmp(argv[1], "gethostname") == 0) {
+        else if (strcmp(arg, "gethostname") == 0)
             do_gethostname();
-        }
-    } else {
-        printf("uname(): ");
-        do_uname();
-        printf("gethostname(): ");
-        do_gethostname();
-    }
+        else if (strcmp(arg, "all") == 0)
+            do_both();
+        else
+            printf("Usage: %s [uname | gethostname | all]\n", argv[0]);
+    } else
+        do_both();
 
     return 0;
 }

@@ -8,7 +8,7 @@ _Wow!_ Now you can run a command and fake your hostname!
 
 Usage is relatively simple: `fakehostname <new-hostname> <cmd> [<args> ...]`
 
-For example,
+For example on Linux,
 
 ```
 $ fakehostname joan hostname
@@ -17,6 +17,17 @@ joan
 $ fakehostname rivers uname -n
 rivers
 ```
+
+Or you can use the library directly, ie with `libfakehostname.so` in the current
+directory,
+
+```
+$ LD_PRELOAD=./libfakehostname.so FAKE_HOSTNAME=joan-rivers hostname
+joan-rivers
+```
+
+Note you _can_ use `fakehostname` on macOS, but it's a little tricky and you
+should read the [note below](#important-note-for-apples-macos-darwin).
 
 ### Installation
 
@@ -40,10 +51,10 @@ $ sudo apt-get install -y build-essential
 
 The command (`fakehostname`), and its associated library (`libfakehostname`),
 are a hack that slip between your program and the C standard library to monkey
-patch the `uname` and `gethostname` routines provided therein. This is
-accomplished via `LD_PRELOAD` environment variables on Linux, and the
-`DYLD_INSERT_LIBRARIES` + `DYLD_FORCE_FLAT_NAMESPACE` ones on macOS (see
-[note below](#important-note-for-apples-macos-darwin)).
+patch the `uname` and `gethostname` functions provided therein. This is
+accomplished via the `LD_PRELOAD` environment variables on Linux, and the
+`DYLD_INSERT_LIBRARIES` + `DYLD_FORCE_FLAT_NAMESPACE` evironment variables on
+macOS (see [important note below](#important-note-for-apples-macos-darwin)).
 The library reads environment variable `FAKE_HOSTNAME` -- prepped by the command
 -- and uses that instead of your system's hostname.
 

@@ -55,6 +55,7 @@ test: example $(LIB_FILE) $(CMD_FILE)
 strip: all
 	strip -s $(LIB_FILE) $(CMD_FILE)
 
+ifeq ($(PLATFORM),Linux)
 deb: all
 	mkdir -p debian-pkg/usr/bin
 	cp -v $(CMD_FILE) debian-pkg/usr/bin
@@ -72,5 +73,6 @@ deb: all
 	sed "s/<<VERSION>>/$$DEB_VER/" debian.control | sed "s/<<ARCH>>/$$DEB_ARCH/" \
 		> debian-pkg/DEBIAN/control; \
 	fakeroot dpkg-deb -b debian-pkg "$$DEB_NAME"
+endif
 
 .PHONY: all clean install uninstall test strip deb

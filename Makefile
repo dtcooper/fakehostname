@@ -38,6 +38,9 @@ all: $(LIB_FILE) $(CMD_FILE)
 %: %.c
 	$(CC) $(CFLAGS) $(CDEFS) $< -o $@
 
+clean:
+	rm -vrf *.so *.dylib *.deb $(CMD_FILE) example debian-pkg
+
 install: all
 	@echo "Installing to $(DESTDIR)"
 	install $(LIB_FILE) $(DESTDIR)/$(LIBDIR)/
@@ -46,12 +49,28 @@ install: all
 uninstall:
 	rm -vf $(DESTDIR)/$(LIBDIR)/$(LIB_FILE) $(DESTDIR)/$(BINDIR)/$(CMD_FILE)
 
-clean:
-	rm -vf $(LIB_NAME).so $(LIB_NAME).dylib $(CMD_FILE) example
-
 test: example $(LIB_FILE) $(CMD_FILE)
 	@./src/test.sh
 
-example:
+strip: all
+	strip -s $(LIB_FILE) $(CMD_FILE)
 
-.PHONY: all clean install uninstall test
+deb: all
+	mkdir -p debian-pkg/usr/bin
+	cp -v $(CMD_FILE) debian-pkg/usr/bin
+	strip -s debian-pkg/usr/bin/$(CMD_FILE)
+	mkdir -p debian-pkg/usr/lib
+	cp -v $(LIB_FILE) debian-pkg/usr/lib
+	strip -s debian-pkg/usr/lib/$(LIB_FILE)
+	mkdir -p debian-pkg/usr/share/doc/fakehostname
+	cp -v README.md debian-pkg/usr/share/doc/fakehostname
+	cp -v LICENSE debian-pkg/usr/share/doc/fakehostname/copyright
+	mkdir -p debian-pkg/DEBIAN
+	DEB_VER="$(shell git describe --tags --always --dirty 2>/dev/null || echo unknown)"; \
+	DEB_ARCH="$(shell dpkg --print-architecture)"; \
+	DEB_NAME="fakehostname_$${DEB_VER}_$${DEB_ARCH}.deb"; \
+	sed "s/<<VERSION>>/$$DEB_VER/" debian.control | sed "s/<<ARCH>>/$$DEB_ARCH/" \
+		> debian-pkg/DEBIAN/control; \
+	fakeroot dpkg-deb -b debian-pkg "$$DEB_NAME"
+
+.PHONY: all clean install uninstall test strip deb

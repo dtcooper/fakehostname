@@ -1,0 +1,8 @@
+Package: fakehostname
+Version: <<VERSION>>
+Section: base
+Priority: optional
+Architecture: <<ARCH>>
+Maintainer: David Cooper <david@dtcooper.com>
+Description: fakehostname
+ A command (and library) to fake your system's hostname.

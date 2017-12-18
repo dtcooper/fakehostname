@@ -2,3 +2,5 @@ fakehostname
 example
 *.dylib
 *.so
+*.deb
+debian-pkg

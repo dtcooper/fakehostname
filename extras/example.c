@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <sys/utsname.h>
 #include <unistd.h>
 
@@ -36,16 +37,25 @@ void do_both() {
 int main(int argc, char **argv) {
     if (argc >= 2) {
         char *arg = argv[1];
-        if (strcmp(arg, "uname") == 0)
+        if (strcmp(arg, "uname") == 0) {
             do_uname();
-        else if (strcmp(arg, "gethostname") == 0)
+        } else if (strcmp(arg, "gethostname") == 0) {
             do_gethostname();
-        else if (strcmp(arg, "all") == 0)
+        } else if (strcmp(arg, "all") == 0) {
             do_both();
-        else
-            printf("Usage: %s [uname | gethostname | all]\n", argv[0]);
-    } else
+        } else {
+            int n = atoi(argv[1]);
+            if (n > 0) {
+                for (int i = 0; i < n; i++) {
+                    do_both();
+                }
+            } else {
+                printf("Usage: %s [uname | gethostname | all | n]\n", argv[0]);
+            }
+        }
+    } else {
         do_both();
+    }
 
     return 0;
 }

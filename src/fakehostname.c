@@ -31,22 +31,33 @@
     #define LIB_FILENAME "libfakehostname." LIB_SUFFIX
 #endif
 
+#ifdef ENABLE_VERBOSE
+    #ifndef ENV_VARNAME_ENABLE_VERBOSE
+        #define ENV_VARNAME_ENABLE_VERBOSE "FAKE_HOSTNAME_ENABLE_VERBOSE"
+    #endif
+#endif
+
 static char *custom_lib_path = NULL;
 static char *new_hostname;
-static int verbose = 0;
 
-#define VERBOSE(...) if (verbose) printf(__VA_ARGS__)
+#ifdef ENABLE_VERBOSE
+    static int verbose = 0;
+    #define VERBOSE(...) \
+        if (verbose) \
+            fprintf(stderr, "fakehostname: " __VA_ARGS__);
+#else
+    #define VERBOSE(...)
+#endif
 #define SETENV(name, val, ...) \
-    if (verbose) \
-        printf("Setting environment variable \"%s\": \"%s\"\n", name, val); \
-        setenv(name, val, __VA_ARGS__)
+    VERBOSE("Setting environment variable \"%s\": \"%s\"\n", name, val) \
+    setenv(name, val, __VA_ARGS__);
 
 char *get_lib_path() {
     static char lib_path[PATH_MAX];
     char lib_locations[] = LIB_LOCATIONS;
 
     if (custom_lib_path != NULL) {
-        VERBOSE("Using custom library path: %s\n", custom_lib_path);
+        VERBOSE("Using custom library path: %s\n", custom_lib_path)
         if (access(custom_lib_path, X_OK) == -1) {
             printf("No library found: %s\n", custom_lib_path);
             exit(EXIT_FAILURE);
@@ -63,13 +74,19 @@ char *get_lib_path() {
         strncpy(lib_path, lib_path_prefix, PATH_MAX - 1);
         strncat(lib_path, "/" LIB_FILENAME, PATH_MAX - 1 - strlen(lib_path));
         lib_path[PATH_MAX - 1] = '\0';
-        VERBOSE("Checking %s: ", lib_path);
+        VERBOSE("Checking %s: ", lib_path)
 
         if (access(lib_path, X_OK) != -1) {
-            VERBOSE("exists!\n");
+#ifdef ENABLE_VERBOSE
+            if (verbose)
+                fprintf(stderr, "exists!\n");
+#endif
             return lib_path;
         }
-        VERBOSE("not found.\n");
+#ifdef ENABLE_VERBOSE
+        if (verbose)
+            fprintf(stderr, "not found.\n");
+#endif
     }
 
     printf("Couldn't find required library: " LIB_FILENAME "\n");
@@ -79,14 +96,20 @@ char *get_lib_path() {
 
 void usage(char *cmd_name, int exit_code) {
     printf(
-        "\nUsage: %s [-h] [-v] [-l ./lib." LIB_SUFFIX "] <new-hostname> <cmd> [<args> ...]\n\n"
+        "\nUsage: %s [-h] "
+#ifdef ENABLE_VERBOSE
+        "[-v] "
+#endif
+        "[-l ./lib." LIB_SUFFIX "] <new-hostname> <cmd> [<args> ...]\n\n"
         "This command fakes your system's hostname for a given command, overriding libc\n"
         "calls to uname() and gethostname()\n\n"
         "Positional arguments:\n"
         "  <new-hostname>      Fake hostname to use\n"
         "  <cmd> [<args> ...]  Command and its arguments to execute\n\n"
         "Optional arguments:\n"
-        "  -v --verbose         Print verbose output\n"
+#ifdef ENABLE_VERBOSE
+        "  -v --verbose         Print verbose/debug output to stderr\n"
+#endif
         "  -h, --help           Show this help message and exit\n"
         "  -l /abs.path/to/mylib." LIB_SUFFIX ", --library /abs.path/to/mylib." LIB_SUFFIX "\n"
         "                       Custom path of fakehostname library (must be absolute)\n\n"
@@ -98,17 +121,28 @@ void usage(char *cmd_name, int exit_code) {
 int parse_options(int argc, char **argv) {
     int c;
     static struct option long_options[] = {
+#ifdef ENABLE_VERBOSE
       {"verbose", no_argument, 0, 'v'},
+#endif
       {"library", required_argument, 0, 'l'},
       {"help", no_argument, 0, 'h'},
       {0, 0, 0, 0}
     };
 
-    while ((c = getopt_long(argc, argv, "+vhl:", long_options, NULL)) != -1) {
+    while ((c = getopt_long(
+        argc, argv,
+        "+hl:"
+#ifdef ENABLE_VERBOSE
+        "v"
+#endif
+        ,
+        long_options, NULL)) != -1) {
         switch (c) {
+#ifdef ENABLE_VERBOSE
             case 'v':
                 verbose = 1;
                 break;
+#endif
             case 'l':
                 custom_lib_path = strdup(optarg);
                 break;
@@ -126,7 +160,7 @@ int parse_options(int argc, char **argv) {
     }
 
     new_hostname = argv[optind];
-    VERBOSE("Faking hostname: %s\n", new_hostname);
+    VERBOSE("Faking hostname: %s\n", new_hostname)
     return optind + 1;
 }
 
@@ -141,7 +175,7 @@ int main(int argc, char **argv) {
     char *current_preload_env_var_value = getenv(ENV_VARNAME_PRELOAD);
     if (current_preload_env_var_value != NULL) {
         VERBOSE("Found existing value in " ENV_VARNAME_PRELOAD ": %s\n",
-            current_preload_env_var_value);
+            current_preload_env_var_value)
 
         strncat(preload_env_var_value, ENV_PRELOAD_PATH_SEP,
             PATH_MAX - 1 - strlen(preload_env_var_value));
@@ -153,19 +187,23 @@ int main(int argc, char **argv) {
     preload_env_var_value[PATH_MAX - 1] = '\0';
 
     //Set FAKE_HOSTNAME, LD_PRELOAD (or DYLD vars for macOS)
-    SETENV(ENV_VARNAME_FAKE_HOSTNAME, new_hostname, 1);
-    SETENV(ENV_VARNAME_PRELOAD, preload_env_var_value, 1);
+    SETENV(ENV_VARNAME_PRELOAD, preload_env_var_value, 1)
 #ifdef __APPLE__
-    SETENV("DYLD_FORCE_FLAT_NAMESPACE", "1", 1);
+    SETENV("DYLD_FORCE_FLAT_NAMESPACE", "1", 1)
 #endif
 
+    SETENV(ENV_VARNAME_FAKE_HOSTNAME, new_hostname, 1)
+
+#ifdef ENABLE_VERBOSE
     if (verbose) {
-        printf("exec():");
+        SETENV(ENV_VARNAME_ENABLE_VERBOSE, "1", 1)
+        VERBOSE("exec():")
         for (int i = argv_cmd; i < argc; i++) {
-            printf(" %s", argv[i]);
+            fprintf(stderr, " %s", argv[i]);
         }
-        printf("\n");
+        fprintf(stderr, "\n");
     }
+#endif
 
     int retval = execvp(argv[argv_cmd], &argv[argv_cmd]);
     if (retval == -1) {

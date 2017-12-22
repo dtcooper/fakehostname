@@ -6,7 +6,7 @@ BINDIR:=bin
 LIBDIR:=lib
 LIB_LOCATIONS:=".:/usr/local/lib:/usr/lib"
 ENV_VARNAME_FAKE_HOSTNAME:=FAKE_HOSTNAME
-VPATH=src
+VPATH=src:extras
 
 PLATFORM:=$(shell uname -s)
 
@@ -24,11 +24,14 @@ LIB_FILE:=$(LIB_NAME).$(LIB_SUFFIX)
 CMD_NAME=fakehostname
 CMD_SRC_FILE=$(CMD_NAME).c
 CMD_FILE:=$(CMD_NAME)
+EX_NAME=example
 
 # Use CDEFs to set a custom preload library name or search path
 CDEFS:=-DLIB_LOCATIONS="\"$(LIB_LOCATIONS)\"" \
 	-DLIB_FILE="\"$(LIB_FILE)\"" \
 	-DENV_VARNAME_FAKE_HOSTNAME="\"$(ENV_VARNAME_FAKE_HOSTNAME)\""
+
+.PHONY: all clean install uninstall test strip deb verbose
 
 all: $(LIB_FILE) $(CMD_FILE)
 
@@ -38,8 +41,13 @@ all: $(LIB_FILE) $(CMD_FILE)
 %: %.c
 	$(CC) $(CFLAGS) $(CDEFS) $< -o $@
 
+verbose: CDEFS+=-DENABLE_VERBOSE=1 -DENV_VARNAME_ENABLE_VERBOSE="\"FAKE_HOSTNAME_ENABLE_VERBOSE\""
+verbose: all
+
+$(EX_NAME): CDEFS=
+
 clean:
-	rm -vrf *.so *.dylib *.deb $(CMD_FILE) example debian-pkg
+	rm -vrf *.so *.dylib *.deb $(CMD_FILE) $(EX_NAME) debian-pkg
 
 install: all
 	@echo "Installing to $(DESTDIR)"
@@ -49,13 +57,17 @@ install: all
 uninstall:
 	rm -vf $(DESTDIR)/$(LIBDIR)/$(LIB_FILE) $(DESTDIR)/$(BINDIR)/$(CMD_FILE)
 
-test: example $(LIB_FILE) $(CMD_FILE)
-	@./src/test.sh
+test: $(EX_NAME) $(LIB_FILE) $(CMD_FILE)
+	@./extras/test.sh
 
 strip: all
+ifeq ($(PLATFORM),Darwin)
+strip:
+	strip $(LIB_FILE) $(CMD_FILE) || true
+else
+strip:
 	strip -s $(LIB_FILE) $(CMD_FILE)
 
-ifeq ($(PLATFORM),Linux)
 deb: all
 	mkdir -p debian-pkg/usr/bin
 	cp -v $(CMD_FILE) debian-pkg/usr/bin
@@ -72,7 +84,6 @@ deb: all
 	DEB_NAME="fakehostname_$${DEB_VER}_$${DEB_ARCH}.deb"; \
 	sed "s/<<VERSION>>/$$DEB_VER/" debian.control | sed "s/<<ARCH>>/$$DEB_ARCH/" \
 		> debian-pkg/DEBIAN/control; \
-	fakeroot dpkg-deb -b debian-pkg "$$DEB_NAME"
+	fakeroot dpkg-deb -b debian-pkg "fakehostname_$${DEB_VER}_$${DEB_ARCH}.deb"; \
+	cp -v "$$DEB_NAME" "fakehostname-latest_$${DEB_ARCH}.deb"
 endif
-
-.PHONY: all clean install uninstall test strip deb

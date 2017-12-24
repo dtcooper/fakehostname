@@ -4,6 +4,7 @@ cd $(dirname "$0")/..
 
 FAILED=0
 NUM_TESTS=0
+IS_LINUX=
 
 random_hostname () {
     echo "${1}_$(LC_CTYPE=C tr -dc A-Za-z0-9 < /dev/urandom | head -c 16)"
@@ -17,6 +18,10 @@ run_test () {
         echo "  $NUM_TESTS. \"$1\" test failed: \"$2\" (expected) != \"$3\" (actual)"
         FAILED="$(expr $FAILED + 1)"
     fi
+}
+
+strip_newlines () {
+    sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/|/g'
 }
 
 # macOS won't work for commands in /bin and /usr/bin becuase of System Integrity
@@ -35,6 +40,7 @@ if [ "$(uname -s)" = "Darwin" ]; then
 
     trap cleanup EXIT
 else
+    IS_LINUX=1
     LIB_SUFFIX=so
 fi
 
@@ -69,6 +75,21 @@ ACTUAL="$(./fakehostname --library ./testlib.bin "$EXPECTED" ./example gethostna
 rm testlib.bin
 run_test "library argument (--library)" "$EXPECTED" "$ACTUAL"
 
+EXPECTED="$(hostname)"
+ACTUAL="$(./fakehostname "" ${SYS_CMD_PREFIX}uname -n)"
+run_test "empty hostname, hostname" "$EXPECTED" "$ACTUAL"
+
+EXPECTED="$(hostname)"
+ACTUAL="$(./fakehostname "" ${SYS_CMD_PREFIX}hostname)"
+run_test "empty hostname, uname" "$EXPECTED" "$ACTUAL"
+
+EXPECTED="uname(): hi|gethostname(): hi|time(): 1234567890"
+if [ "$IS_LINUX" ]; then
+    ACTUAL="$(LD_PRELOAD="./time_preload.so" ./fakehostname hi ./example | strip_newlines)"
+else
+    ACTUAL="$(DYLD_INSERT_LIBRARIES="./time_preload.dylib" DYLD_FORCE_FLAT_NAMESPACE=1 ./fakehostname hi ./example | strip_newlines)"
+fi
+run_test "Preserve pre-existing preload (time)" "$EXPECTED" "$ACTUAL"
 
 echo
 if [ "$FAILED" -gt 0 ]; then

@@ -3,18 +3,12 @@
 #include <dlfcn.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/utsname.h>
-
 #ifdef ENABLE_VERBOSE
     #include <stdio.h>
-    #ifndef ENV_VARNAME_ENABLE_VERBOSE
-        #define ENV_VARNAME_ENABLE_VERBOSE "FAKE_HOSTNAME_ENABLE_VERBOSE"
-    #endif
 #endif
+#include <sys/utsname.h>
 
-#ifndef ENV_VARNAME_FAKE_HOSTNAME
-    #define ENV_VARNAME_FAKE_HOSTNAME "FAKE_HOSTNAME"
-#endif
+#include "common.h"
 
 static int (*__orig_gethostname)(char *name, size_t len) = NULL;
 static int (*__orig_uname)(struct utsname *buf) = NULL;
@@ -28,9 +22,8 @@ static int (*__orig_uname)(struct utsname *buf) = NULL;
             fprintf(stderr, "libfakehostname: \"" ENV_VARNAME_ENABLE_VERBOSE \
                             "\" set. Enabling verbose mode.\n"); \
     } \
-    if (verbose) { \
-        fprintf(stderr, "libfakehostname: " __VA_ARGS__); \
-    }
+    if (verbose) \
+        fprintf(stderr, "libfakehostname: " __VA_ARGS__);
 #else
     #define VERBOSE(...)
 #endif

@@ -11,31 +11,7 @@
 #endif
 #include <unistd.h>
 
-#ifdef __APPLE__
-    #define ENV_VARNAME_PRELOAD "DYLD_INSERT_LIBRARIES"
-    #define ENV_PRELOAD_PATH_SEP ":"
-    #define LIB_SUFFIX "dylib"
-#else
-    #define ENV_VARNAME_PRELOAD "LD_PRELOAD"
-    #define ENV_PRELOAD_PATH_SEP " "
-    #define LIB_SUFFIX "so"
-#endif
-
-#ifndef ENV_VARNAME_FAKE_HOSTNAME
-    #define ENV_VARNAME_FAKE_HOSTNAME "FAKE_HOSTNAME"
-#endif
-#ifndef LIB_LOCATIONS
-    #define LIB_LOCATIONS ".:/usr/local/lib:/usr/lib"
-#endif
-#ifndef LIB_FILENAME
-    #define LIB_FILENAME "libfakehostname." LIB_SUFFIX
-#endif
-
-#ifdef ENABLE_VERBOSE
-    #ifndef ENV_VARNAME_ENABLE_VERBOSE
-        #define ENV_VARNAME_ENABLE_VERBOSE "FAKE_HOSTNAME_ENABLE_VERBOSE"
-    #endif
-#endif
+#include "common.h"
 
 static char *custom_lib_path = NULL;
 static char *new_hostname;
@@ -108,11 +84,11 @@ void usage(char *cmd_name, int exit_code) {
         "  <cmd> [<args> ...]  Command and its arguments to execute\n\n"
         "Optional arguments:\n"
 #ifdef ENABLE_VERBOSE
-        "  -v --verbose         Print verbose/debug output to stderr\n"
+        "  -v --verbose        Print verbose/debug output to stderr\n"
 #endif
-        "  -h, --help           Show this help message and exit\n"
+        "  -h, --help          Show this help message and exit\n"
         "  -l /abs.path/to/mylib." LIB_SUFFIX ", --library /abs.path/to/mylib." LIB_SUFFIX "\n"
-        "                       Custom path of fakehostname library (must be absolute)\n\n"
+        "                      Custom path of fakehostname library (must be absolute)\n\n"
         "...and remember kids, have fun!\n\n",
     basename(cmd_name));
     exit(exit_code);
@@ -207,7 +183,7 @@ int main(int argc, char **argv) {
 
     int retval = execvp(argv[argv_cmd], &argv[argv_cmd]);
     if (retval == -1) {
-        printf("Couldn't execute command \"%s\": %s\n", argv[2], strerror(errno));
+        printf("Couldn't execute command \"%s\": %s\n", argv[argv_cmd], strerror(errno));
         return EXIT_FAILURE;
     }
 

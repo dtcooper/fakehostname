@@ -24,7 +24,10 @@ LIB_FILE:=$(LIB_NAME).$(LIB_SUFFIX)
 CMD_NAME=fakehostname
 CMD_SRC_FILE=$(CMD_NAME).c
 CMD_FILE:=$(CMD_NAME)
+
 EX_NAME=example
+EX_TIME_PRELOAD_NAME=time_preload
+EX_TIME_PRELOAD_FILE=$(EX_TIME_PRELOAD_NAME).$(LIB_SUFFIX)
 
 # Use CDEFs to set a custom preload library name or search path
 CDEFS:=-DLIB_LOCATIONS="\"$(LIB_LOCATIONS)\"" \
@@ -41,10 +44,12 @@ all: $(LIB_FILE) $(CMD_FILE)
 %: %.c
 	$(CC) $(CFLAGS) $(CDEFS) $< -o $@
 
-verbose: CDEFS+=-DENABLE_VERBOSE=1 -DENV_VARNAME_ENABLE_VERBOSE="\"FAKE_HOSTNAME_ENABLE_VERBOSE\""
+verbose: CDEFS+=-DENABLE_VERBOSE=1
 verbose: all
 
 $(EX_NAME): CDEFS=
+$(EX_TIME_PRELOAD_FILE): CDEFS=
+$(EX_TIME_PRELOAD_FILE): LDLIBS=
 
 clean:
 	rm -vrf *.so *.dylib *.deb $(CMD_FILE) $(EX_NAME) debian-pkg
@@ -57,7 +62,7 @@ install: all
 uninstall:
 	rm -vf $(DESTDIR)/$(LIBDIR)/$(LIB_FILE) $(DESTDIR)/$(BINDIR)/$(CMD_FILE)
 
-test: $(EX_NAME) $(LIB_FILE) $(CMD_FILE)
+test: $(EX_NAME) $(EX_TIME_PRELOAD_FILE) $(LIB_FILE) $(CMD_FILE)
 	@./extras/test.sh
 
 strip: all
@@ -68,16 +73,21 @@ else
 strip:
 	strip -s $(LIB_FILE) $(CMD_FILE)
 
-deb: all
+deb: $(EX_NAME) all
 	mkdir -p debian-pkg/usr/bin
 	cp -v $(CMD_FILE) debian-pkg/usr/bin
 	strip -s debian-pkg/usr/bin/$(CMD_FILE)
+
 	mkdir -p debian-pkg/usr/lib
 	cp -v $(LIB_FILE) debian-pkg/usr/lib
 	strip -s debian-pkg/usr/lib/$(LIB_FILE)
+
 	mkdir -p debian-pkg/usr/share/doc/fakehostname
 	cp -v README.md debian-pkg/usr/share/doc/fakehostname
 	cp -v LICENSE debian-pkg/usr/share/doc/fakehostname/copyright
+	cp -v $(EX_NAME) debian-pkg/usr/share/doc/fakehostname/example-prog
+	strip -s debian-pkg/usr/share/doc/fakehostname/example-prog
+
 	mkdir -p debian-pkg/DEBIAN
 	DEB_VER="$(shell git describe --tags --always --dirty 2>/dev/null || echo unknown)"; \
 	DEB_ARCH="$(shell dpkg --print-architecture)"; \

@@ -58,7 +58,7 @@ ACTUAL="$(./fakehostname "$EXPECTED" "${SYS_CMD_PREFIX}uname" -n)"
 run_test "uname command" "$EXPECTED" "$ACTUAL"
 
 EXPECTED="$(random_hostname uname_c)"
-ACTUAL="$(./fakehostname "$EXPECTED" ./example uname)"
+ACTUAL="$(./fakehostname "$EXPECTED" ./example quiet uname)"
 run_test "example: uname() function in C" "$EXPECTED" "$ACTUAL"
 
 EXPECTED="$(random_hostname hostname_cmd)"
@@ -66,12 +66,12 @@ ACTUAL="$(./fakehostname "$EXPECTED" "${SYS_CMD_PREFIX}hostname")"
 run_test "hostname command" "$EXPECTED" "$ACTUAL"
 
 EXPECTED="$(random_hostname hostname_c)"
-ACTUAL="$(./fakehostname "$EXPECTED" ./example gethostname)"
+ACTUAL="$(./fakehostname "$EXPECTED" ./example quiet gethostname)"
 run_test "example: gethostname() function in C" "$EXPECTED" "$ACTUAL"
 
 EXPECTED="$(random_hostname libarg)"
 cp "libfakehostname.$LIB_SUFFIX" testlib.bin
-ACTUAL="$(./fakehostname --library ./testlib.bin "$EXPECTED" ./example gethostname)"
+ACTUAL="$(./fakehostname --library ./testlib.bin "$EXPECTED" ./example quiet gethostname)"
 rm testlib.bin
 run_test "library argument (--library)" "$EXPECTED" "$ACTUAL"
 
@@ -85,9 +85,9 @@ run_test "empty hostname, uname" "$EXPECTED" "$ACTUAL"
 
 EXPECTED="uname(): hi|gethostname(): hi|time(): 1234567890"
 if [ "$IS_LINUX" ]; then
-    ACTUAL="$(LD_PRELOAD="./time_preload.so" ./fakehostname hi ./example | strip_newlines)"
+    ACTUAL="$(LD_PRELOAD="./time_preload.so" ./fakehostname hi ./example all | strip_newlines)"
 else
-    ACTUAL="$(DYLD_INSERT_LIBRARIES="./time_preload.dylib" DYLD_FORCE_FLAT_NAMESPACE=1 ./fakehostname hi ./example | strip_newlines)"
+    ACTUAL="$(DYLD_INSERT_LIBRARIES="./time_preload.dylib" DYLD_FORCE_FLAT_NAMESPACE=1 ./fakehostname hi ./example all | strip_newlines)"
 fi
 run_test "Preserve pre-existing preload (time)" "$EXPECTED" "$ACTUAL"
 

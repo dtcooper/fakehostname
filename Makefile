@@ -28,6 +28,7 @@ CMD_FILE:=$(CMD_NAME)
 EX_NAME=example
 EX_TIME_PRELOAD_NAME=time_preload
 EX_TIME_PRELOAD_FILE=$(EX_TIME_PRELOAD_NAME).$(LIB_SUFFIX)
+DPKG_DIR=debian-pkg
 
 # Use CDEFs to set a custom preload library name or search path
 CDEFS:=-DLIB_LOCATIONS="\"$(LIB_LOCATIONS)\"" \
@@ -52,7 +53,7 @@ $(EX_TIME_PRELOAD_FILE): CDEFS=
 $(EX_TIME_PRELOAD_FILE): LDLIBS=
 
 clean:
-	rm -vrf *.so *.dylib *.deb $(CMD_FILE) $(EX_NAME) debian-pkg
+	rm -vrf *.so *.dylib *.deb $(CMD_FILE) $(EX_NAME) $(DPKG_DIR)
 
 install: all
 	@echo "Installing to $(DESTDIR)"
@@ -73,27 +74,29 @@ else
 strip:
 	strip -s $(LIB_FILE) $(CMD_FILE)
 
+deb: CDEFS:=-DLIB_LOCATIONS="\"/usr/lib:.:/usr/local/lib\"" \
+	-DLIB_FILE="\"$(LIB_FILE)\"" \
+	-DENV_VARNAME_FAKE_HOSTNAME="\"$(ENV_VARNAME_FAKE_HOSTNAME)\""
 deb: $(EX_NAME) all
-	mkdir -p debian-pkg/usr/bin
-	cp -v $(CMD_FILE) debian-pkg/usr/bin
-	strip -s debian-pkg/usr/bin/$(CMD_FILE)
+	install -vd $(DPKG_DIR)/usr/bin
+	install -vsm 0755 $(CMD_FILE) $(DPKG_DIR)/usr/bin
 
-	mkdir -p debian-pkg/usr/lib
-	cp -v $(LIB_FILE) debian-pkg/usr/lib
-	strip -s debian-pkg/usr/lib/$(LIB_FILE)
+	install -vd $(DPKG_DIR)/usr/lib
+	install -vsm 0755 $(LIB_FILE) $(DPKG_DIR)/usr/lib
 
-	mkdir -p debian-pkg/usr/share/doc/fakehostname
-	cp -v README.md debian-pkg/usr/share/doc/fakehostname
-	cp -v LICENSE debian-pkg/usr/share/doc/fakehostname/copyright
-	cp -v $(EX_NAME) debian-pkg/usr/share/doc/fakehostname/example-prog
-	strip -s debian-pkg/usr/share/doc/fakehostname/example-prog
+	install -vd $(DPKG_DIR)/usr/share/fakehostname
+	install -vTsm 0755 $(EX_NAME) $(DPKG_DIR)/usr/share/fakehostname/example-prog
 
-	mkdir -p debian-pkg/DEBIAN
+	install -vd $(DPKG_DIR)/usr/share/doc/fakehostname
+	install -vm 0644 README.md $(DPKG_DIR)/usr/share/doc/fakehostname
+	install -vTm 0644 LICENSE $(DPKG_DIR)/usr/share/doc/fakehostname/copyright
+
+	install -vd $(DPKG_DIR)/DEBIAN
 	DEB_VER="$(shell git describe --tags --always --dirty 2>/dev/null || echo unknown)"; \
 	DEB_ARCH="$(shell dpkg --print-architecture)"; \
 	DEB_NAME="fakehostname_$${DEB_VER}_$${DEB_ARCH}.deb"; \
 	sed "s/<<VERSION>>/$$DEB_VER/" debian.control | sed "s/<<ARCH>>/$$DEB_ARCH/" \
-		> debian-pkg/DEBIAN/control; \
-	fakeroot dpkg-deb -b debian-pkg "fakehostname_$${DEB_VER}_$${DEB_ARCH}.deb"; \
+		> $(DPKG_DIR)/DEBIAN/control; \
+	fakeroot dpkg-deb -b $(DPKG_DIR) "fakehostname_$${DEB_VER}_$${DEB_ARCH}.deb"; \
 	cp -v "$$DEB_NAME" "fakehostname-latest_$${DEB_ARCH}.deb"
 endif

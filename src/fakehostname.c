@@ -84,7 +84,7 @@ void usage(char *cmd_name, int exit_code) {
         "  <cmd> [<args> ...]  Command and its arguments to execute\n\n"
         "Optional arguments:\n"
 #ifdef ENABLE_VERBOSE
-        "  -v --verbose        Print verbose/debug output to stderr\n"
+        "  -v, --verbose       Print verbose/debug output to stderr\n"
 #endif
         "  -h, --help          Show this help message and exit\n"
         "  -l /abs.path/to/mylib." LIB_SUFFIX ", --library /abs.path/to/mylib." LIB_SUFFIX "\n"

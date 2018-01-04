@@ -10,6 +10,8 @@ VPATH=src:extras
 
 PLATFORM:=$(shell uname -s)
 
+FAKE_HOSTNAME_VERSION:=$(shell git describe --tags --always --dirty 2>/dev/null || echo unknown)
+
 ifeq ($(PLATFORM),Darwin)
 	CLIBFLAGS:=-fPIC -dynamiclib -flat_namespace
 	LIB_SUFFIX:=dylib
@@ -33,7 +35,8 @@ DPKG_DIR=debian-pkg
 # Use CDEFs to set a custom preload library name or search path
 CDEFS:=-DLIB_LOCATIONS="\"$(LIB_LOCATIONS)\"" \
 	-DLIB_FILE="\"$(LIB_FILE)\"" \
-	-DENV_VARNAME_FAKE_HOSTNAME="\"$(ENV_VARNAME_FAKE_HOSTNAME)\""
+	-DENV_VARNAME_FAKE_HOSTNAME="\"$(ENV_VARNAME_FAKE_HOSTNAME)\"" \
+	-DFAKE_HOSTNAME_VERSION="\"$(FAKE_HOSTNAME_VERSION)\""
 
 .PHONY: all clean install uninstall test strip deb verbose
 
@@ -76,7 +79,8 @@ strip:
 
 deb: CDEFS:=-DLIB_LOCATIONS="\"/usr/lib:.:/usr/local/lib\"" \
 	-DLIB_FILE="\"$(LIB_FILE)\"" \
-	-DENV_VARNAME_FAKE_HOSTNAME="\"$(ENV_VARNAME_FAKE_HOSTNAME)\""
+	-DENV_VARNAME_FAKE_HOSTNAME="\"$(ENV_VARNAME_FAKE_HOSTNAME)\"" \
+	-DFAKE_HOSTNAME_VERSION="\"$(FAKE_HOSTNAME_VERSION)\""
 deb: $(EX_NAME) all
 	install -vd $(DPKG_DIR)/usr/bin
 	install -vsm 0755 $(CMD_FILE) $(DPKG_DIR)/usr/bin
@@ -92,7 +96,7 @@ deb: $(EX_NAME) all
 	install -vTm 0644 LICENSE $(DPKG_DIR)/usr/share/doc/fakehostname/copyright
 
 	install -vd $(DPKG_DIR)/DEBIAN
-	DEB_VER="$(shell git describe --tags --always --dirty 2>/dev/null || echo unknown)"; \
+	DEB_VER="$(FAKE_HOSTNAME_VERSION)"; \
 	DEB_ARCH="$(shell dpkg --print-architecture)"; \
 	DEB_NAME="fakehostname_$${DEB_VER}_$${DEB_ARCH}.deb"; \
 	sed "s/<<VERSION>>/$$DEB_VER/" debian.control | sed "s/<<ARCH>>/$$DEB_ARCH/" \

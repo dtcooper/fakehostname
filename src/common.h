@@ -20,3 +20,6 @@
 #ifndef LIB_FILENAME
     #define LIB_FILENAME "libfakehostname." LIB_SUFFIX
 #endif
+#ifndef FAKE_HOSTNAME_VERSION
+    #define FAKE_HOSTNAME_VERSION "unknown"
+#endif

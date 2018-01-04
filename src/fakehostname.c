@@ -65,23 +65,25 @@ char *get_lib_path() {
 
 void usage(char *cmd_name, int exit_code) {
     printf(
-        "\nUsage: %s [-h] "
+        "fakehostname version " FAKE_HOSTNAME_VERSION "\n\n"
+        "Usage: %s [-h"
 #ifdef ENABLE_VERBOSE
-        "[-v] "
+        "v"
 #endif
-        "[-l ./lib." LIB_SUFFIX "] <new-hostname> <cmd> [<args> ...]\n\n"
+        "V] [-l ./lib." LIB_SUFFIX "] <new-hostname> <cmd> [<args> ...]\n\n"
         "This command fakes your system's hostname for a given command, overriding libc\n"
         "calls to uname() and gethostname()\n\n"
         "Positional arguments:\n"
         "  <new-hostname>      Fake hostname to use\n"
         "  <cmd> [<args> ...]  Command and its arguments to execute\n\n"
         "Optional arguments:\n"
+        "  -h, --help          Show this help message and exit\n"
+        "  -l /abs.path/to/mylib." LIB_SUFFIX ", --library /abs.path/to/mylib." LIB_SUFFIX "\n"
+        "                      Custom path of fakehostname library (must be absolute)\n"
 #ifdef ENABLE_VERBOSE
         "  -v, --verbose       Print verbose/debug output to stderr\n"
 #endif
-        "  -h, --help          Show this help message and exit\n"
-        "  -l /abs.path/to/mylib." LIB_SUFFIX ", --library /abs.path/to/mylib." LIB_SUFFIX "\n"
-        "                      Custom path of fakehostname library (must be absolute)\n\n"
+        "  -V, --version       Print version information and exit\n\n"
         "...and remember kids, have fun!\n\n",
     basename(cmd_name));
     exit(exit_code);
@@ -90,11 +92,12 @@ void usage(char *cmd_name, int exit_code) {
 int parse_options(int argc, char **argv) {
     int c;
     static struct option long_options[] = {
+      {"help", no_argument, 0, 'h'},
+      {"library", required_argument, 0, 'l'},
 #ifdef ENABLE_VERBOSE
       {"verbose", no_argument, 0, 'v'},
 #endif
-      {"library", required_argument, 0, 'l'},
-      {"help", no_argument, 0, 'h'},
+      {"version", no_argument, 0, 'V'},
       {0, 0, 0, 0}
     };
 
@@ -104,20 +107,23 @@ int parse_options(int argc, char **argv) {
 #ifdef ENABLE_VERBOSE
         "v"
 #endif
-        ,
+        "V",
         long_options, NULL)) != -1) {
         switch (c) {
+            case 'h':
+                usage(argv[0], EXIT_SUCCESS);
+                break;
+            case 'l':
+                custom_lib_path = strdup(optarg);
+                break;
 #ifdef ENABLE_VERBOSE
             case 'v':
                 verbose = 1;
                 break;
 #endif
-            case 'l':
-                custom_lib_path = strdup(optarg);
-                break;
-            case 'h':
-                usage(argv[0], EXIT_SUCCESS);
-                break;
+            case 'V':
+                printf("fakehostname version " FAKE_HOSTNAME_VERSION "\n");
+                exit(EXIT_SUCCESS);
             case '?':
             default:
                 usage(argv[0], EXIT_FAILURE);

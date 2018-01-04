@@ -50,19 +50,12 @@ char *get_lib_path() {
         strncpy(lib_path, lib_path_prefix, PATH_MAX - 1);
         strncat(lib_path, "/" LIB_FILENAME, PATH_MAX - 1 - strlen(lib_path));
         lib_path[PATH_MAX - 1] = '\0';
-        VERBOSE("Checking %s: ", lib_path)
 
         if (access(lib_path, X_OK) != -1) {
-#ifdef ENABLE_VERBOSE
-            if (verbose)
-                fprintf(stderr, "exists!\n");
-#endif
+            VERBOSE("Checking %s: exists!\n", lib_path)
             return lib_path;
         }
-#ifdef ENABLE_VERBOSE
-        if (verbose)
-            fprintf(stderr, "not found.\n");
-#endif
+        VERBOSE("Checking %s: not found.\n", lib_path)
     }
 
     printf("Couldn't find required library: " LIB_FILENAME "\n");

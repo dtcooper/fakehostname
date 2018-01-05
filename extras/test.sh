@@ -89,7 +89,12 @@ if [ "$IS_LINUX" ]; then
 else
     ACTUAL="$(DYLD_INSERT_LIBRARIES="./time_preload.dylib" DYLD_FORCE_FLAT_NAMESPACE=1 ./fakehostname hi ./example all | strip_newlines)"
 fi
-run_test "Preserve pre-existing preload (time)" "$EXPECTED" "$ACTUAL"
+run_test "preserve pre-existing preload (time)" "$EXPECTED" "$ACTUAL"
+
+GIT_VER="$(git describe --tags --always --dirty 2>/dev/null || echo unknown)"
+EXPECTED="fakehostname version: $GIT_VER|libfakehostname version: $GIT_VER (./libfakehostname.$LIB_SUFFIX)"
+ACTUAL="$(./fakehostname -V | strip_newlines)"
+run_test "version check" "$EXPECTED" "$ACTUAL"
 
 echo
 if [ "$FAILED" -gt 0 ]; then

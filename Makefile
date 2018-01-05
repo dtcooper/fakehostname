@@ -45,6 +45,9 @@ all: $(LIB_FILE) $(CMD_FILE)
 %.$(LIB_SUFFIX): %.c
 	$(CC) $(CFLAGS) $(CLIBFLAGS) $(CDEFS) $< -o $@ $(LDLIBS)
 
+$(CMD_FILE): $(CMD_FILE).c
+	$(CC) $(CFLAGS) $(CDEFS) $< -o $@ $(LDLIBS)
+
 %: %.c
 	$(CC) $(CFLAGS) $(CDEFS) $< -o $@
 

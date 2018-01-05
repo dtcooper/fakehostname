@@ -13,14 +13,18 @@
 static int (*__orig_gethostname)(char *name, size_t len) = NULL;
 static int (*__orig_uname)(struct utsname *buf) = NULL;
 
+char *version = FAKE_HOSTNAME_VERSION;
+
 #ifdef ENABLE_VERBOSE
     static int verbose = -1;
     #define VERBOSE(...) \
     if (verbose == -1) { \
         verbose = ((getenv(ENV_VARNAME_ENABLE_VERBOSE) == NULL) ? 0 : 1); \
-        if (verbose) \
+        if (verbose) { \
+            fprintf(stderr, "libfakehostname: Version %s\n", version); \
             fprintf(stderr, "libfakehostname: \"" ENV_VARNAME_ENABLE_VERBOSE \
                             "\" set. Enabling verbose mode.\n"); \
+        } \
     } \
     if (verbose) \
         fprintf(stderr, "libfakehostname: " __VA_ARGS__);

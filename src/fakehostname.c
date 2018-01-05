@@ -1,3 +1,4 @@
+#include <dlfcn.h>
 #include <errno.h>
 #include <getopt.h>
 #include <libgen.h>
@@ -62,11 +63,30 @@ char *get_lib_path() {
     exit(EXIT_FAILURE);
 }
 
+void print_version() {
+    printf("fakehostname version: " FAKE_HOSTNAME_VERSION "\n");
+
+    char *lib_path = get_lib_path();
+    void *lib_handle = dlopen(lib_path, RTLD_LAZY);
+    if (!lib_handle) {
+        printf("Error opening library %s: \"%s\"\n", lib_path, dlerror());
+        return;
+    }
+
+    char **lib_version = dlsym(lib_handle, "version");
+
+    char *error;
+    if ((error = dlerror()) != NULL)  {
+        printf("Error loading \"version\" from %s: \"%s\"\n", lib_path, error);
+        return;
+    }
+
+    printf("libfakehostname version: %s (%s)\n", *lib_version, lib_path);
+}
 
 void usage(char *cmd_name, int exit_code) {
     printf(
-        "fakehostname version " FAKE_HOSTNAME_VERSION "\n\n"
-        "Usage: %s [-h"
+        "\nUsage: %s [-h"
 #ifdef ENABLE_VERBOSE
         "v"
 #endif
@@ -86,6 +106,10 @@ void usage(char *cmd_name, int exit_code) {
         "  -V, --version       Print version information and exit\n\n"
         "...and remember kids, have fun!\n\n",
     basename(cmd_name));
+#ifdef ENABLE_VERBOSE
+    verbose = 0; //shutup possible verbose output in print_version() here
+#endif
+    print_version();
     exit(exit_code);
 }
 
@@ -122,7 +146,7 @@ int parse_options(int argc, char **argv) {
                 break;
 #endif
             case 'V':
-                printf("fakehostname version " FAKE_HOSTNAME_VERSION "\n");
+                print_version();
                 exit(EXIT_SUCCESS);
             case '?':
             default:
@@ -133,6 +157,8 @@ int parse_options(int argc, char **argv) {
     if ((optind + 2) > argc) {
         usage(argv[0], EXIT_FAILURE);
     }
+
+    VERBOSE("Version: " FAKE_HOSTNAME_VERSION "\n");
 
     new_hostname = argv[optind];
     VERBOSE("Faking hostname: %s\n", new_hostname)

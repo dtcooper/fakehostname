@@ -1,3 +1,6 @@
+#ifndef _FAKEHOSTNAME_HAS_INCLUDED_COMMON_H
+    #define _FAKEHOSTNAME_HAS_INCLUDED_COMMON_H
+
 // Apple or Linux configuration
 #ifdef __APPLE__
     #define ENV_VARNAME_PRELOAD "DYLD_INSERT_LIBRARIES"
@@ -14,8 +17,8 @@
     #define ENV_VARNAME_FAKE_HOSTNAME "FAKE_HOSTNAME"
 #endif
 
-#ifndef ENV_VARNAME_ENABLE_VERBOSE
-    #define ENV_VARNAME_ENABLE_VERBOSE "FAKE_HOSTNAME_ENABLE_VERBOSE"
+#ifndef ENV_VARNAME_ENABLE_DEBUG
+    #define ENV_VARNAME_ENABLE_DEBUG "FAKE_HOSTNAME_ENABLE_DEBUG"
 #endif
 
 #ifndef LIB_LOCATIONS
@@ -28,4 +31,20 @@
 
 #ifndef FAKE_HOSTNAME_VERSION
     #define FAKE_HOSTNAME_VERSION "unknown"
+#endif
+
+
+#ifdef ENABLE_DEBUG
+    #ifndef CFILENAME
+        #error "Can't include common.h without CFILENAME defined"
+    #endif
+
+    static char _debug = 0;
+    #define SET_DEBUG(n) _debug = n;
+    #define DEBUG(...) if (_debug) fprintf(stderr, CFILENAME ": " __VA_ARGS__);
+#else
+    #define DEBUG(...)
+    #define SET_DEBUG(n)
+#endif
+
 #endif

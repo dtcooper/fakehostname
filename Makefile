@@ -38,7 +38,7 @@ CDEFS:=-DLIB_LOCATIONS="\"$(LIB_LOCATIONS)\"" \
 	-DENV_VARNAME_FAKE_HOSTNAME="\"$(ENV_VARNAME_FAKE_HOSTNAME)\"" \
 	-DFAKE_HOSTNAME_VERSION="\"$(FAKE_HOSTNAME_VERSION)\""
 
-.PHONY: all clean install uninstall test strip deb verbose
+.PHONY: all clean install uninstall test strip deb debug
 
 all: $(LIB_FILE) $(CMD_FILE)
 
@@ -51,8 +51,8 @@ $(CMD_FILE): $(CMD_FILE).c
 %: %.c
 	$(CC) $(CFLAGS) $(CDEFS) $< -o $@
 
-verbose: CDEFS+=-DENABLE_VERBOSE=1
-verbose: all
+debug: CDEFS+=-DENABLE_DEBUG
+debug: all
 
 $(EX_NAME): CDEFS=
 $(EX_TIME_PRELOAD_FILE): CDEFS=

@@ -91,7 +91,7 @@ else
 fi
 run_test "preserve pre-existing preload (time)" "$EXPECTED" "$ACTUAL"
 
-GIT_VER="$(git describe --tags --always --dirty 2>/dev/null || echo unknown)"
+GIT_VER="$(git describe --tags --always --dirty=-modified 2>/dev/null || echo dev)"
 EXPECTED="fakehostname version: $GIT_VER|libfakehostname version: $GIT_VER (./libfakehostname.$LIB_SUFFIX)"
 ACTUAL="$(./fakehostname -V | strip_newlines)"
 run_test "version check" "$EXPECTED" "$ACTUAL"

@@ -31,20 +31,40 @@ should read the [note below](#important-note-for-apples-macos-darwin).
 
 ### Installation
 
-Fetch the source from Github and install!
+## All Platforms (From Source)
+
+Fetch the source from Github and install! You'll need git and
+[GCC](https://gcc.gnu.org/)
 
 ```
-$ git clone https://github.com/dtcooper/fakehostname.git
-$ cd fakehostname
-$ make
-$ sudo make install
+git clone https://github.com/dtcooper/fakehostname.git
+cd fakehostname
+make
+sudo make install
 ```
 
-On Debian/Ubuntu you'll need [GCC](https://gcc.gnu.org/) which you can install
-via,
+### On Debian/Ubuntu (From Source)
+
+You can install the build requirements via,
 
 ```
-$ sudo apt-get install -y build-essential
+sudo apt-get install -y git build-essential
+```
+
+And then run the commands above
+
+### On Debian/Ubuntu (On *amd64*, With Debian Package)
+
+You can also package for the {{amd64}} architecture, which I've built and
+attached to the
+[Releases page](https://github.com/dtcooper/fakehostname/releases/latest).
+
+Or try this fun single command which does the same,
+
+```
+wget -O - https://api.github.com/repos/dtcooper/fakehostname/releases/latest \
+    | grep "browser_download_url.*amd64.deb" | cut -d '"' -f 4 \
+    | wget -i - -O /tmp/fhn.deb && sudo dpkg -i /tmp/fhn.deb && rm /tmp/fhn.deb
 ```
 
 ## Overview
@@ -105,6 +125,10 @@ Uninstall with one command,
 ```
 sudo make uninstall
 ```
+
+## Final Note
+
+_...and remember kids, have fun!_
 
 ## Author and License
 

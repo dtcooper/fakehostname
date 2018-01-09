@@ -10,7 +10,7 @@ VPATH=src:extras
 
 PLATFORM:=$(shell uname -s)
 
-FAKE_HOSTNAME_VERSION:=$(shell git describe --tags --always --dirty 2>/dev/null || echo unknown)
+FAKE_HOSTNAME_VERSION:=$(shell git describe --tags --always --dirty=-modified 2>/dev/null || echo dev)
 
 ifeq ($(PLATFORM),Darwin)
 	CLIBFLAGS:=-fPIC -dynamiclib -flat_namespace
@@ -104,6 +104,5 @@ deb: $(EX_NAME) all
 	DEB_NAME="fakehostname_$${DEB_VER}_$${DEB_ARCH}.deb"; \
 	sed "s/<<VERSION>>/$$DEB_VER/" debian.control | sed "s/<<ARCH>>/$$DEB_ARCH/" \
 		> $(DPKG_DIR)/DEBIAN/control; \
-	fakeroot dpkg-deb -b $(DPKG_DIR) "fakehostname_$${DEB_VER}_$${DEB_ARCH}.deb"; \
-	cp -v "$$DEB_NAME" "fakehostname-latest_$${DEB_ARCH}.deb"
+	fakeroot dpkg-deb -b $(DPKG_DIR) "fakehostname_$${DEB_VER}_$${DEB_ARCH}.deb";
 endif

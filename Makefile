@@ -10,7 +10,7 @@ VPATH=src:extras
 
 PLATFORM:=$(shell uname -s)
 
-FAKE_HOSTNAME_VERSION:=$(shell git describe --tags --always --dirty=-modified 2>/dev/null || echo dev)
+FAKE_HOSTNAME_VERSION:=$(shell git describe --tags --always --dirty=-modified 2>/dev/null || echo dev-nogit)
 
 ifeq ($(PLATFORM),Darwin)
 	CLIBFLAGS:=-fPIC -dynamiclib -flat_namespace
@@ -51,12 +51,10 @@ $(CMD_FILE): $(CMD_FILE).c
 %: %.c
 	$(CC) $(CFLAGS) $(CDEFS) $< -o $@
 
-debug: CDEFS+=-DENABLE_DEBUG
-debug: all
-
-$(EX_NAME): CDEFS=
-$(EX_TIME_PRELOAD_FILE): CDEFS=
 $(EX_TIME_PRELOAD_FILE): LDLIBS=
+
+debug: CDEFS+=-DENABLE_DEBUG
+debug: all $(EX_NAME) $(EX_TIME_PRELOAD_FILE)
 
 clean:
 	rm -vrf *.so *.dylib *.deb $(CMD_FILE) $(EX_NAME) $(DPKG_DIR)

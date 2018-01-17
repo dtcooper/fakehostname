@@ -1,5 +1,5 @@
-#ifndef _FAKEHOSTNAME_HAS_INCLUDED_COMMON_H
-    #define _FAKEHOSTNAME_HAS_INCLUDED_COMMON_H
+#ifndef FAKEHOSTNAME_COMMON_H_
+    #define FAKEHOSTNAME_COMMON_H_
 
 // Apple or Linux configuration
 #ifdef __APPLE__
@@ -35,16 +35,41 @@
 
 
 #ifdef ENABLE_DEBUG
-    #ifndef CFILENAME
-        #error "Can't include common.h without CFILENAME defined"
-    #endif
+    #include <libgen.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <unistd.h>
+
+    #define COLOUR_RED   "\x1B[31m"
+    #define COLOUR_RESET "\x1B[0m"
 
     static char _debug = 0;
+    static char _isatty = -1;
+
     #define SET_DEBUG(n) _debug = n;
-    #define DEBUG(...) if (_debug) fprintf(stderr, CFILENAME ": " __VA_ARGS__);
+    #define DEBUG_NOFILENAME(...) \
+        if (_debug) { \
+            if (_isatty == -1) _isatty = isatty(fileno(stdout)); \
+            if (_isatty) fputs(/* RED */ "\x1B[31m", stderr); \
+            fprintf(stderr, __VA_ARGS__); \
+            if (_isatty) fputs(/* RESET */ "\x1B[0m", stderr); \
+        }
+    #define DEBUG(...) \
+        DEBUG_NOFILENAME("%s:%d: ", basename(__FILE__), __LINE__); \
+        DEBUG_NOFILENAME(__VA_ARGS__);
+
+    #define IS_DEBUG_ON() _debug
+
+    #define SET_DEBUG_FROM_ENV() \
+        SET_DEBUG(getenv(ENV_VARNAME_ENABLE_DEBUG) != NULL) \
+        DEBUG("\"" ENV_VARNAME_ENABLE_DEBUG "\" set. Debug mode enabled.\n")
+
 #else
     #define DEBUG(...)
+    #define DEBUG_NOFILENAME(...)
     #define SET_DEBUG(n)
+    #define SET_DEBUG_FROM_ENV()
+    #define IS_DEBUG_ON() 0
 #endif
 
 #endif

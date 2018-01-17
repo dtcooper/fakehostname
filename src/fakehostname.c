@@ -12,7 +12,6 @@
 #endif
 #include <unistd.h>
 
-#define CFILENAME "fakehostname"
 #include "common.h"
 
 static char *custom_lib_path = NULL;
@@ -187,13 +186,13 @@ int main(int argc, char **argv) {
     SETENV(ENV_VARNAME_FAKE_HOSTNAME, new_hostname, 1)
 
 #ifdef ENABLE_DEBUG
-    if (_debug) {
+    if (IS_DEBUG_ON()) {
         SETENV(ENV_VARNAME_ENABLE_DEBUG, "1", 1)
         DEBUG("exec():")
         for (int i = argv_cmd; i < argc; i++) {
-            fprintf(stderr, " %s", argv[i]);
+            DEBUG_NOFILENAME(" %s", argv[i]);
         }
-        fprintf(stderr, "\n");
+        DEBUG_NOFILENAME("\n");
     }
 #endif
 

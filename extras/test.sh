@@ -2,6 +2,12 @@
 
 cd $(dirname "$0")/..
 
+if [ "0$MAKELEVEL" -lt 1 ]; then
+    # Make sure we're in make so we build dependencies
+    echo "[Calling using make]"
+    exec make test
+fi
+
 FAILED=0
 NUM_TESTS=0
 IS_LINUX=
@@ -42,12 +48,6 @@ if [ "$(uname -s)" = "Darwin" ]; then
 else
     IS_LINUX=1
     LIB_SUFFIX=so
-fi
-
-if [ ! -f "example" ]; then
-    echo "[Command example not found. Running make.]"
-    make all example
-    echo
 fi
 
 echo "Running tests..."
@@ -91,7 +91,7 @@ else
 fi
 run_test "preserve pre-existing preload (time)" "$EXPECTED" "$ACTUAL"
 
-GIT_VER="$(git describe --tags --always --dirty=-modified 2>/dev/null || echo dev)"
+GIT_VER="$(git describe --tags --always --dirty=-modified 2>/dev/null || echo dev-nogit)"
 EXPECTED="fakehostname version: $GIT_VER|libfakehostname version: $GIT_VER (./libfakehostname.$LIB_SUFFIX)"
 ACTUAL="$(./fakehostname -v | strip_newlines)"
 run_test "version check" "$EXPECTED" "$ACTUAL"

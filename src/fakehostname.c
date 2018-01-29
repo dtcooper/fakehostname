@@ -56,7 +56,11 @@ char *get_lib_path() {
 }
 
 void version(int exit_code) {
-    printf("fakehostname version: " FAKE_HOSTNAME_VERSION "\n");
+    puts("fakehostname version: " FAKE_HOSTNAME_VERSION
+#ifdef ENABLE_DEBUG
+        " [debug enabled]"
+#endif
+    );
 
     SET_DEBUG(0) //disable potential debug output on get_lib_path
     char *lib_path = get_lib_path();

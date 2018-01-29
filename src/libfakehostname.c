@@ -11,7 +11,11 @@
 static int (*__orig_gethostname)(char *name, size_t len) = NULL;
 static int (*__orig_uname)(struct utsname *buf) = NULL;
 
-char *version = FAKE_HOSTNAME_VERSION;
+char *version = FAKE_HOSTNAME_VERSION
+#ifdef ENABLE_DEBUG
+    " [debug enabled]"
+#endif
+;
 
 static void __attribute__((constructor)) initializer()  {
 #ifdef ENABLE_DEBUG

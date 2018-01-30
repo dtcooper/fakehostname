@@ -93,7 +93,14 @@ deb: $(EX_NAME) all
 	install -vTsm 0755 $(EX_NAME) $(DPKG_DIR)/usr/share/fakehostname/example-prog
 
 	install -vd $(DPKG_DIR)/usr/share/doc/fakehostname
-	install -vm 0644 README.md $(DPKG_DIR)/usr/share/doc/fakehostname
+	if which pandoc unidecode; then \
+		pandoc -f markdown -t plain --columns=80 README.md \
+			| sed 's/LICENSE/copyright/' | unidecode -e utf8 > /tmp/fakehostname-readme; \
+	else \
+		cp README.md /tmp/fakehostname-readme; \
+	fi
+	install -vTm 0644 /tmp/fakehostname-readme $(DPKG_DIR)/usr/share/doc/fakehostname/readme
+	rm /tmp/fakehostname-readme
 	install -vTm 0644 LICENSE $(DPKG_DIR)/usr/share/doc/fakehostname/copyright
 
 	install -vd $(DPKG_DIR)/DEBIAN

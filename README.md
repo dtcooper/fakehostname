@@ -55,9 +55,8 @@ And then run the commands above
 
 ### On Debian/Ubuntu (On *amd64*, With Debian Package)
 
-You can also package for the {{amd64}} architecture, which I've built and
-attached to the
-[Releases page](https://github.com/dtcooper/fakehostname/releases/latest).
+You can also package for the `amd64` architecture, which I've built and uploaded
+to the [Releases Page](https://github.com/dtcooper/fakehostname/releases/latest).
 
 Or try this fun single command which does the same,
 

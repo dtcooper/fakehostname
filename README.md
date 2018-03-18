@@ -59,7 +59,7 @@ The library reads environment variable `FAKE_HOSTNAME` -- prepped by the command
 -- and uses that instead of your system's hostname.
 
 This software has been tested on macOS 10.11 (El Capitan) and Ubuntu 16.04 LTS
-+ 17.10.
+\+ 17.10.
 
 ## Important Note for Apple's macOS (Darwin)
 

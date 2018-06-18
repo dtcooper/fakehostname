@@ -92,7 +92,8 @@ fi
 run_test "preserve pre-existing preload (time)" "$EXPECTED" "$ACTUAL"
 
 GIT_VER="$(git describe --tags --always --dirty=-modified 2>/dev/null || echo dev-nogit)"
-EXPECTED="fakehostname version: $GIT_VER|libfakehostname version: $GIT_VER (./libfakehostname.$LIB_SUFFIX)"
+DEBUG_STR="$(./fakehostname -v | fgrep -q '[debug enabled]' && echo ' [debug enabled]')"
+EXPECTED="fakehostname version: ${GIT_VER}${DEBUG_STR}|libfakehostname version: ${GIT_VER}${DEBUG_STR} (./libfakehostname.$LIB_SUFFIX)"
 ACTUAL="$(./fakehostname -v | strip_newlines)"
 run_test "version check" "$EXPECTED" "$ACTUAL"
 

@@ -53,7 +53,7 @@ sudo apt-get install -y git build-essential
 
 And then run the commands above
 
-### On Debian/Ubuntu (On *amd64*, With Debian Package)
+### On Debian/Ubuntu (Prebuilt Package)
 
 You can also install the package for the `amd64` and `arm64` architectures,
 which I've built and uploaded to the

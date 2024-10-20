@@ -23,7 +23,9 @@ static char *new_hostname;
 
 char *get_lib_path() {
     static char lib_path[PATH_MAX];
-    char lib_locations[] = LIB_LOCATIONS;
+    #ifndef __linux__
+        char lib_locations[] = LIB_LOCATIONS;
+    #endif
 
     if (custom_lib_path != NULL) {
         DEBUG("Using custom library path: %s\n", custom_lib_path)
@@ -35,6 +37,31 @@ char *get_lib_path() {
         return custom_lib_path;
     }
 
+    #ifdef __linux__
+        char *lib_locations;
+        char *ld_library_path = getenv("LD_LIBRARY_PATH");
+        if (ld_library_path != NULL) {
+            DEBUG("Found LD_LIBRARY_PATH and prepending it to lib location search: %s\n", ld_library_path)
+
+            lib_locations = malloc(strlen(ld_library_path) + strlen(LIB_LOCATIONS) + 2);
+            if (lib_locations == NULL) {
+                printf("Error allocating memory!\n");
+                exit(1);
+            }
+            strcpy(lib_locations, ld_library_path);
+            strcat(lib_locations, ":");
+            strcat(lib_locations, LIB_LOCATIONS);
+        } else {
+            lib_locations = malloc(strlen(LIB_LOCATIONS) + 1);
+            if (lib_locations == NULL) {
+                printf("Error allocating memory!\n");
+                exit(1);
+            }
+            strcpy(lib_locations, LIB_LOCATIONS);
+        }
+    #endif
+
+    DEBUG("Searching for libs in: %s\n", lib_locations)
     for (
         char *lib_path_prefix = strtok(lib_locations, ":");
         lib_path_prefix != NULL;

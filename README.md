@@ -55,15 +55,15 @@ And then run the commands above
 
 ### On Debian/Ubuntu (On *amd64*, With Debian Package)
 
-You can also install the package for the `amd64` architecture, which I've built
-and uploaded to the
+You can also install the package for the `amd64` and `arm64` architectures,
+which I've built and uploaded to the
 [Releases Page](https://github.com/dtcooper/fakehostname/releases/latest).
 
 Or try this fun single command which does the same,
 
 ```
 wget -O - https://api.github.com/repos/dtcooper/fakehostname/releases/latest \
-    | grep "browser_download_url.*amd64.deb" | cut -d '"' -f 4 \
+    | grep "browser_download_url.*$(dpkg --print-architecture).deb" | cut -d '"' -f 4 \
     | wget -i - -O /tmp/fhn.deb && sudo dpkg -i /tmp/fhn.deb && rm /tmp/fhn.deb
 ```
 

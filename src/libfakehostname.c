@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <sys/utsname.h>
 
-#include "common.h"
+#include "fakehostname.h"
 
 static int (*__orig_gethostname)(char *name, size_t len) = NULL;
 static int (*__orig_uname)(struct utsname *buf) = NULL;

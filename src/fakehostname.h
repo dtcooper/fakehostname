@@ -1,5 +1,5 @@
-#ifndef FAKEHOSTNAME_COMMON_H_
-    #define FAKEHOSTNAME_COMMON_H_
+#ifndef FAKEHOSTNAME_H_
+    #define FAKEHOSTNAME_H_
 
 // Apple or Linux configuration
 #ifdef __APPLE__

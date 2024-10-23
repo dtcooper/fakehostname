@@ -12,7 +12,7 @@
 #endif
 #include <unistd.h>
 
-#include "common.h"
+#include "fakehostname.h"
 
 static char *custom_lib_path = NULL;
 static char *new_hostname;

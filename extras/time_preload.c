@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "../src/common.h"
+#include "../src/fakehostname.h"
 
 
 #ifdef ENABLE_DEBUG

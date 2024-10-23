@@ -10,7 +10,7 @@ Usage is relatively simple: `fakehostname <new-hostname> <cmd> [<args> ...]`
 
 For example on Linux,
 
-```
+```bash
 $ fakehostname joan hostname
 joan
 
@@ -21,7 +21,7 @@ rivers
 Or you can use the library directly, ie with `libfakehostname.so` in the current
 directory,
 
-```
+```bash
 $ LD_PRELOAD=./libfakehostname.so FAKE_HOSTNAME=joan-rivers hostname
 joan-rivers
 ```
@@ -36,24 +36,24 @@ should read the [note below](#important-note-for-apples-macos-darwin).
 Fetch the source from Github and install! You'll need git and
 [GCC](https://gcc.gnu.org/)
 
-```
+```bash
 git clone https://github.com/dtcooper/fakehostname.git
 cd fakehostname
 make
 sudo make install
 ```
 
-### On Debian/Ubuntu (From Source)
+### On Debian/Ubuntu Linux (From Source)
 
 You can install the build requirements via,
 
-```
+```bash
 sudo apt-get install -y git build-essential
 ```
 
 And then run the commands above
 
-### On Debian/Ubuntu (Prebuilt Package)
+### On Debian/Ubuntu Linux (Prebuilt Package)
 
 You can also install the package for the `amd64` and `arm64` architectures,
 which I've built and uploaded to the
@@ -61,10 +61,20 @@ which I've built and uploaded to the
 
 Or try this fun single command which does the same,
 
-```
+```bash
 wget -O - https://api.github.com/repos/dtcooper/fakehostname/releases/latest \
     | grep "browser_download_url.*$(dpkg --print-architecture).deb" | cut -d '"' -f 4 \
     | wget -i - -O /tmp/fhn.deb && sudo dpkg -i /tmp/fhn.deb && rm /tmp/fhn.deb
+```
+
+### On Arch Linux
+
+Install from the [AUR](https://aur.archlinux.org/), with an
+[AUR helper](https://wiki.archlinux.org/title/AUR_helpers). The example below
+uses [Yay](https://github.com/Jguer/yay),
+
+```bash
+yay -S fakehostname
 ```
 
 ## Overview
@@ -94,7 +104,7 @@ You'll have to use executables that aren't in your system's path, ie `/bin`,
 `/usr/bin`, et cetera. For example, to use the `hostname` command, you'll have
 to copy it locally.
 
-```
+```bash
 # Run on a Mac named "joan" and it doesn't work, since `hostname` is in /bin
 $ fakehostname rivers hostname
 joan
@@ -112,7 +122,7 @@ Unfortunately, this renders this software relatively useless on macOS. Oh well!
 There a couple simple tests for the command, namely running `uname` and
 `hostname` and verifying it actually works.
 
-```
+```bash
 make test
 ```
 
@@ -122,7 +132,7 @@ If all goes well, you should see a `SUCCESS: All N/N tests passed!` message!
 
 Uninstall with one command,
 
-```
+```bash
 sudo make uninstall
 ```
 
